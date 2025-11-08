@@ -40,13 +40,13 @@ services:
     container_name: blog_app_db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: "{$DB_DATABASE}"
+      POSTGRES_DB: "${DB_DATABASE}"
       POSTGRES_USER: "${DB_USERNAME}"
       POSTGRES_PASSWORD: "${DB_PASSWORD}"
     volumes:
       - blog_db_data:/var/lib/postgresql/data
     ports:
-      - "${DB_PORT}:${DB_PORT"
+      - "${DB_PORT}:5432"
     networks:
       - app-network
     healthcheck:

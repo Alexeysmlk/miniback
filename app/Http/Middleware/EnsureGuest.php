@@ -16,14 +16,10 @@ class EnsureGuest
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->bearerToken()) {
-            $user = $request->user('sanctum');
-
-            if ($user) {
-                return response()->json([
-                    'message' => 'Already authenticated. Please logout first.',
-                ], 403);
-            }
+        if (Auth::guard('sanctum')->check()) {
+            return response()->json([
+                'message' => 'Already authenticated.',
+            ], Response::HTTP_FORBIDDEN);
         }
 
         return $next($request);
