@@ -13,6 +13,5 @@ readonly class IndexOptionsDTO
         public ?PostStatusEnum $status,
         public ?string $publishedFrom,
         public ?string $publishedTo,
-    )
-    {}
+    ) {}
 }

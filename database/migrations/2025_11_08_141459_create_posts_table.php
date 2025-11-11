@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\PostStatusEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -18,7 +19,7 @@ return new class extends Migration
             $table->foreignId('author_id')->constrained('users')->cascadeOnDelete();
             $table->timestamp('published_at')->nullable();
             // TODO : Use enum for status column
-            $table->string('status')->default('draft');
+            $table->string('status')->default(PostStatusEnum::DRAFT);
             $table->timestamps();
         });
     }

@@ -13,12 +13,12 @@ class CommentService
 
     public function __construct() {}
 
-    public function getCommentsForPost(Post $post, int $limit = 10): LengthAwarePaginator
+    public function getCommentsForPost(Post $post, ?int $limit = null): LengthAwarePaginator
     {
         return $post->comments()
             ->with('author')
             ->latest()
-            ->paginate($limit);
+            ->paginate($limit ?? static::DEFAULT_LIMIT);
     }
 
     public function createCommentForPost(Post $post, User $user, array $data): Comment

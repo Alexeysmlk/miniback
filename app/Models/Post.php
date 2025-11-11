@@ -45,7 +45,7 @@ class Post extends Model
 
     public function scopeSearch(Builder $query, string $term): void
     {
-        $term = '%' . $term . '%';
+        $term = '%'.$term.'%';
 
         $query->where(function (Builder $query) use ($term) {
             $query->whereLike('title', $term)
