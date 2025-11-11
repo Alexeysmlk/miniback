@@ -38,6 +38,7 @@ class PostService
 
     public function createPost(array $data, User $author): Post
     {
+        // TODO Implement unique exception handling for title
         return Post::create(array_merge($data, [
             'author_id' => $author->id,
         ]));
