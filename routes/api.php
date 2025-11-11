@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AnalyticsController;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Auth\EmailVerificationController;
 use App\Http\Controllers\Api\CommentController;
@@ -48,5 +49,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::get('/user', fn (Request $request) => new UserResource($request->user()));
         Route::patch('/users/{user}/role', [UserController::class, 'updateRole'])->name('users.update-role')->can('updateRole', 'user');
+
+        Route::controller(AnalyticsController::class)->prefix('analytics')->name('analytics.')->group(function () {
+            Route::get('/posts', 'posts')->name('posts');
+            Route::get('/comments', 'comments')->name('comments');
+            Route::get('/users', 'users')->name('users');
+        });
     });
 });
