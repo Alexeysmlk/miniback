@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\PostStatusEnum;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +18,10 @@ class PostFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'title' => fake()->unique()->sentence(),
+            'body' => fake()->paragraphs(4, true),
+            'status' => fake()->randomElement(PostStatusEnum::cases()),
+            'published_at' => fake()->boolean(80) ? fake()->dateTimeThisMonth() : null,
         ];
     }
 }
