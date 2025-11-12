@@ -4,20 +4,27 @@ namespace Tests\Feature\Auth;
 
 use App\Enums\RoleEnum;
 use App\Models\User;
+use Database\Seeders\PermissionSeeder;
+use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
-use PHPUnit\Framework\Attributes\Test;
-use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 
 class AuthenticationTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected bool $seed = true;
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-    #[Test]
-    public function new_user_can_register(): void
+        $this->seed([
+            RoleSeeder::class,
+            PermissionSeeder::class,
+        ]);
+    }
+
+    public function test_new_user_can_register(): void
     {
         $response = $this->postJson(route('register'), [
             'name' => 'Test User',
@@ -37,8 +44,7 @@ class AuthenticationTest extends TestCase
         $this->assertTrue($user->hasRole(RoleEnum::VIEWER));
     }
 
-    #[Test]
-    public function user_cant_register_with_existing_email(): void
+    public function test_user_cant_register_with_existing_email(): void
     {
         User::factory()->create([
             'email' => 'existing@example.com',
@@ -55,8 +61,7 @@ class AuthenticationTest extends TestCase
         $response->assertJsonValidationErrors('email');
     }
 
-    #[Test]
-    public function existing_user_can_login(): void
+    public function test_existing_user_can_login(): void
     {
         User::factory()->create([
             'email' => 'login@example.com',
@@ -72,8 +77,7 @@ class AuthenticationTest extends TestCase
         $response->assertJsonStructure(['token']);
     }
 
-    #[Test]
-    public function user_cant_login_with_invalid_password(): void
+    public function test_user_cant_login_with_invalid_password(): void
     {
         User::factory()->create([
             'email' => 'login@example.com',
