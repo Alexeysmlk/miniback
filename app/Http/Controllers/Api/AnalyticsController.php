@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Analytics\CommentStatRequest;
 use App\Http\Requests\Api\Analytics\PostStatsRequest;
 use App\Http\Resources\Analytics\PostResource;
+use App\Http\Resources\Analytics\RoleResource;
 use App\Services\AnalyticsService;
 use Illuminate\Http\Request;
 
@@ -45,7 +46,11 @@ class AnalyticsController extends Controller
     public function users(Request $request)
     {
         return response()->json([
-            'message' => 'Users analytics retrieved successfully',
+            'count_by_roles' => RoleResource::collection(
+                $this->analyticsService->getUsersCountByRoles()
+            ),
+            'top_5_active_authors' => $this->analyticsService->getTopAuthors(5),
+            'top_5_active_commenters' => $this->analyticsService->getTopCommenters(5),
         ]);
     }
 }

@@ -4,10 +4,12 @@ namespace App\Services;
 
 use App\Models\Comment;
 use App\Models\Post;
+use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Role;
 
 class AnalyticsService
 {
@@ -26,6 +28,12 @@ class AnalyticsService
     private const CACHE_KEY_COMMENT_ACTIVITY_BY_DAY = 'analytics:comments:activity_by_day_of_week';
 
     private const CACHE_KEY_COMMENT_ACTIVITY_BY_HOUR = 'analytics:comments:activity_by_hour';
+
+    private const CACHE_KEY_USERS_BY_ROLES = 'analytics:users:count_by_roles';
+
+    private const CACHE_KEY_TOP_ACTIVE_AUTHORS = 'analytics:users:top_active_authors';
+
+    private const CACHE_KEY_TOP_ACTIVE_COMMENTERS = 'analytics:users:top_active_commenters';
 
     private const CACHE_TTL = 600;
 
@@ -86,7 +94,7 @@ class AnalyticsService
                     ->with('author:id,name,email')
                     ->withCount('comments')
                     ->orderByDesc('comments_count')
-                    ->limit($limit)
+                    ->take($limit)
                     ->get();
             }
         );
@@ -117,6 +125,14 @@ class AnalyticsService
                 ];
             }
         );
+    }
+
+    public function getCommentActivity(string $groupBy): Collection
+    {
+        return match ($groupBy) {
+            'hour' => $this->getCommentActivityByHour(),
+            'day' => $this->getCommentActivityByDayOfWeek(),
+        };
     }
 
     private function getCommentActivityByDayOfWeek(): Collection
@@ -165,12 +181,47 @@ class AnalyticsService
         );
     }
 
-    public function getCommentActivity(string $groupBy): Collection
+    public function getUsersCountByRoles()
     {
-        return match ($groupBy) {
-            'hour' => $this->getCommentActivityByHour(),
-            'day' => $this->getCommentActivityByDayOfWeek(),
-        };
+        return Cache::remember(
+            static::CACHE_KEY_USERS_BY_ROLES,
+            static::CACHE_TTL,
+            function () {
+                return Role::withCount('users')->get();
+            }
+        );
+    }
+
+    public function getTopAuthors(int $limit = 5): Collection
+    {
+        return Cache::remember(
+            static::CACHE_KEY_TOP_ACTIVE_AUTHORS.':'.$limit,
+            static::CACHE_TTL,
+            function () use ($limit) {
+                return User::query()
+                    ->select('id', 'name', 'email')
+                    ->withCount('posts')
+                    ->orderBy('posts_count', 'desc')
+                    ->take($limit)
+                    ->get();
+            }
+        );
+    }
+
+    public function getTopCommenters(int $limit = 5): Collection
+    {
+        return Cache::remember(
+            static::CACHE_KEY_TOP_ACTIVE_COMMENTERS.':'.$limit,
+            static::CACHE_TTL,
+            function () use ($limit) {
+                return User::query()
+                    ->select('id', 'name', 'email')
+                    ->withCount('comments')
+                    ->orderBy('comments_count', 'desc')
+                    ->take($limit)
+                    ->get();
+            }
+        );
     }
 
     private function getStartDateFromPeriod(string $period): Carbon
