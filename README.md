@@ -5,7 +5,7 @@
 ## Технический стек
 
 *   **PHP:** 8.2+
-*   **Фреймворк:** Laravel 11+
+*   **Фреймворк:** Laravel 12
 *   **База данных:** PostgreSQL
 *   **Кеш:** Redis
 *   **Окружение:** Docker / Docker Compose
