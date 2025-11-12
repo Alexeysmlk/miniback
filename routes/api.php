@@ -13,7 +13,6 @@ use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-
 Route::middleware('for-guest')->group(function () {
     Route::post('/register', [AuthController::class, 'register'])->name('register');
     Route::post('/login', [AuthController::class, 'login'])->name('login');
@@ -29,7 +28,7 @@ Route::middleware('auth:sanctum')->group(function () {
         ->group(function () {
             Route::post('/notification', 'send')->name('send');
             Route::get('/{id}/{hash}', 'verify')->middleware('signed')->name('verify');
-    });
+        });
 
     Route::middleware('verified')->group(function () {
         Route::controller(PostController::class)
@@ -66,6 +65,6 @@ Route::middleware('auth:sanctum')->group(function () {
                 Route::get('/posts', 'posts')->name('posts');
                 Route::get('/comments', 'comments')->name('comments');
                 Route::get('/users', 'users')->name('users');
-        });
+            });
     });
 });
