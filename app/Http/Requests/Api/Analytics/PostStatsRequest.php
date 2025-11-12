@@ -24,7 +24,7 @@ class PostStatsRequest extends FormRequest
     {
         return [
             'period' => [
-                'sometimes',
+                'required',
                 'string',
                 Rule::in(['day', 'week', 'month']),
             ],
