@@ -1,59 +1,87 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Backend-сервис для Блога
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Этот проект представляет собой backend-сервис для управления постами и комментариями в блоге компании. Он реализован на Laravel и предоставляет RESTful API для всех необходимых CRUD-операций, аутентификации, управления доступом на основе ролей и сбора аналитики.
 
-## About Laravel
+## Технический стек
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+*   **PHP:** 8.2+
+*   **Фреймворк:** Laravel 11+
+*   **База данных:** PostgreSQL
+*   **Кеш:** Redis
+*   **Окружение:** Docker / Docker Compose
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Быстрый старт
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Для запуска проекта на локальной машине необходимо выполнить следующие шаги. Убедитесь, что у вас установлены **Docker** и **Docker Compose**.
 
-## Learning Laravel
+1.  **Клонируйте репозиторий**
+    ```bash
+    git clone git@github.com:Alexeysmlk/miniback.git
+    cd miniback
+    ```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+2.  **Создайте и настройте файл окружения**
+    Скопируйте файл `.env.example` и убедитесь, что переменные соответствуют настройкам в `compose.yml` (например, `DB_HOST=pgsql`).
+    ```bash
+    cp .env.example .env
+    ```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+3.  **Соберите и запустите Docker-контейнеры**
+    Эта команда скачает образы, соберет контейнеры и запустит их в фоновом режиме.
+    ```bash
+    docker-compose up -d --build
+    ```
 
-## Laravel Sponsors
+4.  **Установите зависимости и сгенерируйте ключ**
+    ```bash
+    docker-compose exec app composer install
+    docker-compose exec app php artisan key:generate
+    ```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+5.  **Запустите миграции и сидеры**
+    Эта команда создаст структуру базы данных и заполнит ее начальными данными (роли, разрешения, тестовые пользователи и посты).
+    ```bash
+    docker-compose exec app php artisan migrate:fresh --seed
+    ```
 
-### Premium Partners
+После выполнения всех шагов проект будет доступен по адресу `http://localhost:8080`.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### Учетные данные по умолчанию
 
-## Contributing
+Сидер создает несколько пользователей для тестирования. Главный администратор:
+*   **Email:** `admin@example.com`
+*   **Пароль:** `admin123`
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Ключевые API Эндпоинты
 
-## Code of Conduct
+Все эндпоинты, кроме регистрации и входа, требуют `Authorization: Bearer <token>` заголовок.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+#### Аутентификация
+*   `POST /api/auth/register` - Регистрация нового пользователя.
+*   `POST /api/auth/login` - Вход в систему, получение токена.
+*   `POST /api/auth/logout` - Выход из системы.
+*   `GET /api/user` - Получение данных текущего пользователя.
 
-## Security Vulnerabilities
+#### Посты
+*   `GET /api/posts` - Получение списка постов (с пагинацией, фильтрацией и поиском).
+*   `POST /api/posts` - Создание нового поста.
+*   `GET /api/posts/{post}` - Получение одного поста.
+*   `PATCH /api/posts/{post}` - Обновление поста.
+*   `DELETE /api/posts/{post}` - Удаление поста.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+#### Комментарии
+*   `GET /api/posts/{post}/comments` - Получение комментариев к посту.
+*   `POST /api/posts/{post}/comments` - Создание нового комментария.
+*   `PATCH /api/comments/{comment}` - Обновление комментария.
+*   `DELETE /api/comments/{comment}` - Удаление комментария.
 
-## License
+#### Управление и Справочники
+*   `PATCH /api/users/{user}/role` - Изменение роли пользователя (только для администратора).
+*   `GET /api/meta/roles` - Получение списка всех доступных ролей.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+#### Аналитика
+*   `GET /api/analytics/posts` - Статистика по постам.
+*   `GET /api/analytics/comments` - Статистика по комментариям.
+*   `GET /api/analytics/users` - Статистика по пользователям.
+
+---
