@@ -19,6 +19,14 @@ class AnalyticsService
 
     private const CACHE_KEY_TOP_COMMENTED_POSTS = 'analytics:posts:top_commented_posts';
 
+    private const CACHE_KEY_COUNT_TOTAL_COMMENTS = 'analytics:comments:total_count';
+
+    private const CACHE_KEY_COUNT_COMMENTS_BY_PERIOD = 'analytics:comments:count_by_period';
+
+    private const CACHE_KEY_COMMENT_ACTIVITY_BY_DAY = 'analytics:comments:activity_by_day_of_week';
+
+    private const CACHE_KEY_COMMENT_ACTIVITY_BY_HOUR = 'analytics:comments:activity_by_hour';
+
     private const CACHE_TTL = 600;
 
     public function getPostCountByStatus(): Collection
@@ -82,6 +90,87 @@ class AnalyticsService
                     ->get();
             }
         );
+    }
+
+    public function getTotalCommentsCount(): int
+    {
+        return Cache::remember(
+            static::CACHE_KEY_COUNT_TOTAL_COMMENTS,
+            static::CACHE_TTL,
+            function () {
+                return Comment::query()->count();
+            }
+        );
+    }
+
+    public function getCommentCountByPeriod(string $period = 'week'): array
+    {
+        return Cache::remember(
+            static::CACHE_KEY_COUNT_COMMENTS_BY_PERIOD.':'.$period,
+            static::CACHE_TTL,
+            function () use ($period) {
+                return [
+                    'period' => $period,
+                    'count' => Comment::query()
+                        ->where('created_at', '>=', $this->getStartDateFromPeriod($period))
+                        ->count(),
+                ];
+            }
+        );
+    }
+
+    private function getCommentActivityByDayOfWeek(): Collection
+    {
+        return Cache::remember(
+            static::CACHE_KEY_COMMENT_ACTIVITY_BY_DAY,
+            static::CACHE_TTL,
+            function () {
+                $comments = Comment::query()
+                    ->where('created_at', '>=', $this->getStartDateFromPeriod('week'))
+                    ->select('created_at')
+                    ->get();
+
+                return $comments
+                    ->groupBy(function ($comment) {
+                        return $comment->created_at->format('N');
+                    })
+                    ->map(function ($group) {
+                        return $group->count();
+                    })
+                    ->sortKeys();
+            }
+        );
+    }
+
+    private function getCommentActivityByHour(): Collection
+    {
+        return Cache::remember(
+            static::CACHE_KEY_COMMENT_ACTIVITY_BY_HOUR,
+            static::CACHE_TTL,
+            function () {
+                $comments = Comment::query()
+                    ->where('created_at', '>=', $this->getStartDateFromPeriod('day'))
+                    ->select('created_at')
+                    ->get();
+
+                return $comments
+                    ->groupBy(function ($comment) {
+                        return $comment->created_at->format('G');
+                    })
+                    ->map(function ($group) {
+                        return $group->count();
+                    })
+                    ->sortKeys();
+            }
+        );
+    }
+
+    public function getCommentActivity(string $groupBy): Collection
+    {
+        return match ($groupBy) {
+            'hour' => $this->getCommentActivityByHour(),
+            'day' => $this->getCommentActivityByDayOfWeek(),
+        };
     }
 
     private function getStartDateFromPeriod(string $period): Carbon

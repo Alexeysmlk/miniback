@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Analytics\CommentStatRequest;
 use App\Http\Requests\Api\Analytics\PostStatsRequest;
 use App\Http\Resources\Analytics\PostResource;
 use App\Services\AnalyticsService;
@@ -19,7 +20,7 @@ class AnalyticsController extends Controller
         return response()->json([
             'count_by_status' => $this->analyticsService->getPostCountByStatus(),
             'count_by_period' => $this->analyticsService->getPostCountByPeriod(
-                $request->validated('period', 'week')
+                $request->validated('period')
             ),
             'average_comments_per_post' => $this->analyticsService->getAverageCommentsPerPost(),
             'top_5_posts_by_comments' => PostResource::collection(
@@ -28,10 +29,16 @@ class AnalyticsController extends Controller
         ]);
     }
 
-    public function comments(Request $request)
+    public function comments(CommentStatRequest $request)
     {
         return response()->json([
-            'message' => 'Comments analytics retrieved successfully',
+            'comments' => $this->analyticsService->getTotalCommentsCount(),
+            'comments_by_period' => $this->analyticsService->getCommentCountByPeriod(
+                $request->validated('period')
+            ),
+            'activity' => $this->analyticsService->getCommentActivity(
+                $request->validated('group_by')
+            ),
         ]);
     }
 
