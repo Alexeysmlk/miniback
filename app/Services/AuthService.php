@@ -6,15 +6,10 @@ namespace App\Services;
 
 use App\Enums\RoleEnum;
 use App\Models\User;
-use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Support\Facades\Hash;
 
 class AuthService
 {
-    public function __construct(
-        private readonly Guard $authGuard,
-    ) {}
-
     public function register(array $userData): array
     {
         $user = User::create([
@@ -33,11 +28,12 @@ class AuthService
 
     public function login(array $userData): ?array
     {
-        if (! $this->authGuard->attempt($userData)) {
+        $user = User::where('email', $userData['email'])->first();
+
+        if (! $user || ! Hash::check($userData['password'], $user->password)) {
             return null;
         }
 
-        $user = $this->authGuard->user();
         $user->tokens()->delete();
 
         return [
