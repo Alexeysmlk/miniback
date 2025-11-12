@@ -26,7 +26,7 @@ class AuthenticationTest extends TestCase
             'password_confirmation' => 'testpassword',
         ]);
 
-        $response->assertStatus(Response::HTTP_CREATED);
+        $response->assertCreated();
         $response->assertJsonStructure(['token']);
 
         $this->assertDatabaseHas('users', [
@@ -51,7 +51,7 @@ class AuthenticationTest extends TestCase
             'password_confirmation' => 'password',
         ]);
 
-        $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $response->assertUnprocessable();
         $response->assertJsonValidationErrors('email');
     }
 
@@ -68,7 +68,7 @@ class AuthenticationTest extends TestCase
             'password' => 'password',
         ]);
 
-        $response->assertStatus(Response::HTTP_OK);
+        $response->assertOk();
         $response->assertJsonStructure(['token']);
     }
 
@@ -85,7 +85,7 @@ class AuthenticationTest extends TestCase
             'password' => 'wrongpassword',
         ]);
 
-        $response->assertStatus(Response::HTTP_UNAUTHORIZED);
+        $response->assertUnauthorized();
         $response->assertJsonMissingPath('token');
     }
 }
